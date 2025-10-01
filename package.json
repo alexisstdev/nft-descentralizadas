@@ -11,6 +11,12 @@
   "license": "ISC",
   "packageManager": "pnpm@10.13.1",
   "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
     "viem": "^2.37.9"
+  },
+  "devDependencies": {
+    "ethers": "^6.15.0",
+    "hardhat": "^3.0.6"
   }
 }
