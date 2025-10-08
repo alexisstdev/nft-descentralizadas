@@ -15,7 +15,7 @@ const contract = new NFTContract(
 	config.SEPOLIA_URL,
 );
 
-const imagePath = "./assets/olas.jpg";
+const imagePath = "./assets/1.png";
 
 if (!fs.existsSync(imagePath)) {
 	throw new Error(`Imagen no encontrada: ${imagePath}`);
@@ -24,8 +24,8 @@ if (!fs.existsSync(imagePath)) {
 const imageUrl = await pinata.uploadImage(imagePath);
 
 const metadata = {
-	name: "Olas 2",
-	description: "Segundo NFT",
+	name: "Mapaches",
+	description: "NFTs de mapaches",
 	image: imageUrl,
 	attributes: [],
 };
