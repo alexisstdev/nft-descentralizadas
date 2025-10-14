@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-620ca1dff8dca3b13292183d3aa365ac48a96fd8",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/Payments.sol": "project/contracts/Payments.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/Payments.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract Payments {\n    mapping(address => uint256) private balances;\n\n    event Deposit(address indexed account, uint256 amount);\n    event Release(address indexed account, uint256 amount);\n\n    function deposit() external payable {\n        require(msg.value > 0, \"Deposit amount must be greater than 0\");\n        balances[msg.sender] += msg.value;\n        emit Deposit(msg.sender, msg.value);\n    }\n\n    function getBalance(address account) external view returns (uint256) {\n        return balances[account];\n    }\n\n    function release(uint256 amount) external {\n        require(amount > 0, \"Release amount must be greater than 0\");\n        require(balances[msg.sender] >= amount, \"Insufficient balance\");\n\n        balances[msg.sender] -= amount;\n        payable(msg.sender).transfer(amount);\n        emit Release(msg.sender, amount);\n    }\n}\n"
+      }
+    }
+  }
+}

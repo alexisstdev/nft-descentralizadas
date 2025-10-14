@@ -1,7 +1,7 @@
 import fs from "node:fs";
-import { loadConfig } from "../utils/config.js";
 import { PinataService } from "./pinata.service.js";
 import { NFTContract } from "./nft-contract.service.js";
+import { loadConfig } from "../utils/config.js";
 
 const config = loadConfig();
 
@@ -15,7 +15,7 @@ const contract = new NFTContract(
 	config.SEPOLIA_URL,
 );
 
-const imagePath = "./assets/1.png";
+const imagePath = "./assets/4.png";
 
 if (!fs.existsSync(imagePath)) {
 	throw new Error(`Imagen no encontrada: ${imagePath}`);
@@ -32,7 +32,10 @@ const metadata = {
 
 const metadataUrl = await pinata.uploadMetadata(metadata);
 
-const result = await contract.mint(config.SEPOLIA_PUBLIC_KEY, metadataUrl);
+const result = await contract.mint(
+	"0xEbC61C48e516440272B076EdBd7671978F4dF210",
+	metadataUrl,
+);
 
 console.log(`Hash: ${result.hash}`);
 console.log(`Token ID: ${result.tokenId}`);

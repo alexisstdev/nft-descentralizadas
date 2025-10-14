@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import type { EnvConfig } from "../nfts/types.js";
+import type { EnvConfig } from "../types.js";
 
 dotenv.config();
 
@@ -11,6 +11,9 @@ export function loadConfig(): EnvConfig {
 		PINATA_API_KEY: process.env.PINATA_API_KEY,
 		PINATA_API_SECRET: process.env.PINATA_API_SECRET,
 		NFT_CONTRACT_ADDRESS: process.env.NFT_CONTRACT_ADDRESS,
+		PUBLIC_KEYS: process.env.PUBLIC_KEYS,
+		PRIVATE_KEYS: process.env.PRIVATE_KEYS,
+		PAYMENT_CONTRACT_ADDRESS: process.env.PAYMENT_CONTRACT_ADDRESS,
 	};
 
 	// Validate required environment variables

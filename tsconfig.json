@@ -14,7 +14,7 @@
   },
   "include": [
     "./hardhat.config.ts",
-    "./scripts",
+    "src/scripts",
     "./deploy",
     "./test",
     "nfts/main.ts",
@@ -22,6 +22,7 @@
     "nfts/nft.service.ts",
     "nfts/pinata.service.ts",
     "nfts/types.ts",
-    "utils/config.ts"
+    "src/utils/config.ts",
+    "src/payments/contractHelper.ts"
   ]
 }
