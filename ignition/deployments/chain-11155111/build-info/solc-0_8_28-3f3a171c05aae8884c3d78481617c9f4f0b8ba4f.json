@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-3f3a171c05aae8884c3d78481617c9f4f0b8ba4f",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/Payments.sol": "project/contracts/Payments.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/Payments.sol": {
+        "content": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n\ncontract Payments {\n    address private owner;\n\n    event Deposit(address indexed sender, uint256 amount);\n    event Release(\n        address indexed account1,\n        address indexed account2,\n        uint256 amount1,\n        uint256 amount2\n    );\n\n    constructor() {\n        owner = msg.sender;\n    }\n\n    function deposit() external payable {\n        require(msg.value > 0, \"Deposit amount must be greater than 0\");\n        emit Deposit(msg.sender, msg.value);\n    }\n\n    function getBalance() external view returns (uint256) {\n        return address(this).balance;\n    }\n\n    function release(address account1, address account2) external {\n        require(msg.sender == owner, \"Only owner can release funds\");\n        require(address(this).balance > 0, \"No balance to release\");\n        require(account1 != address(0), \"Account1 cannot be zero address\");\n        require(account2 != address(0), \"Account2 cannot be zero address\");\n\n        uint256 totalBalance = address(this).balance;\n\n        uint256 amount1 = (totalBalance * 80) / 100;\n        uint256 amount2 = totalBalance - amount1;\n\n        payable(account1).transfer(amount1);\n        payable(account2).transfer(amount2);\n\n        emit Release(account1, account2, amount1, amount2);\n    }\n}\n"
+      }
+    }
+  }
+}

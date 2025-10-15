@@ -27,16 +27,9 @@ router.post("/deposit", async (req: Request, res: Response) => {
 	}
 });
 
-router.get("/balance/:address", async (req: Request, res: Response) => {
+router.get("/balance", async (req: Request, res: Response) => {
 	try {
-		const { address } = req.params;
-
-		if (!address) {
-			res.status(400).json({ error: "Address is required" });
-			return;
-		}
-
-		const balance = await paymentsContract.getBalance(address);
+		const balance = await paymentsContract.getBalance();
 		const formattedBalance = Number(balance) / 1e18;
 
 		res.json({
@@ -50,16 +43,40 @@ router.get("/balance/:address", async (req: Request, res: Response) => {
 	}
 });
 
-router.post("/release", async (req: Request, res: Response) => {
+router.get("/account-balance/:address", async (req: Request, res: Response) => {
 	try {
-		const { amount } = req.body;
+		const { address } = req.params;
 
-		if (!amount) {
-			res.status(400).json({ error: "amount are required" });
+		if (!address) {
+			res.status(400).json({ error: "Address is required" });
 			return;
 		}
 
-		const hash = await paymentsContract.release(amount);
+		const balance = await paymentsContract.getAccountBalance(address);
+		const formattedBalance = Number(balance) / 1e18;
+
+		res.json({
+			success: true,
+			address,
+			balance: balance.toString(),
+			balanceEth: formattedBalance,
+		});
+	} catch (error) {
+		console.error("Get account balance error:", error);
+		res.status(500).json({ error: "Failed to get account balance" });
+	}
+});
+
+router.post("/release", async (req: Request, res: Response) => {
+	try {
+		const { account1, account2 } = req.body;
+
+		if (!account1 || !account2) {
+			res.status(400).json({ error: "account1 and account2 are required" });
+			return;
+		}
+
+		const hash = await paymentsContract.release(account1, account2);
 		res.json({ success: true, hash });
 	} catch (error) {
 		console.error("Release error:", error);
