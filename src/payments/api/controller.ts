@@ -79,12 +79,12 @@ export class PaymentsContract {
 		return balance as bigint;
 	}
 
-	async release(to: string, amount: string): Promise<string> {
+	async release(amount: string): Promise<string> {
 		const hash = await this.walletClient.writeContract({
 			address: paymentsContractAddress,
 			abi: this.abi,
 			functionName: "release",
-			args: [to, parseEther(amount)],
+			args: [parseEther(amount)],
 			chain: sepolia,
 		});
 

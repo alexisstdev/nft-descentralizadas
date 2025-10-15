@@ -52,14 +52,14 @@ router.get("/balance/:address", async (req: Request, res: Response) => {
 
 router.post("/release", async (req: Request, res: Response) => {
 	try {
-		const { to, amount } = req.body;
+		const { amount } = req.body;
 
-		if (!to || !amount) {
-			res.status(400).json({ error: "Address and amount are required" });
+		if (!amount) {
+			res.status(400).json({ error: "amount are required" });
 			return;
 		}
 
-		const hash = await paymentsContract.release(to, amount);
+		const hash = await paymentsContract.release(amount);
 		res.json({ success: true, hash });
 	} catch (error) {
 		console.error("Release error:", error);
