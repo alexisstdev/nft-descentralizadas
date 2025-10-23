@@ -13,8 +13,15 @@ contract MultiSignPaymentWallet {
         bool executed;
     }
 
+    struct Approval {
+        address approver;
+        uint256 timestamp;
+    }
+
     Transaction[] public transactions;
     mapping(uint => mapping(address => bool)) public approvals;
+    mapping(uint => Approval[]) public transactionApprovals;
+    mapping(uint => mapping(address => uint256)) public approvalTimestamps;
     //ContratoPagos
     address[] public payees;
     mapping(address => uint) public shares;
@@ -114,8 +121,16 @@ contract MultiSignPaymentWallet {
         Transaction storage transaction = transactions[txId];
         require(!transaction.executed, "Tx already executed");
         require(!approvals[txId][msg.sender], "Tx already approved by caller");
+
         approvals[txId][msg.sender] = true;
         transaction.approvalCount += 1;
+
+        // Track approval with timestamp
+        transactionApprovals[txId].push(
+            Approval({approver: msg.sender, timestamp: block.timestamp})
+        );
+        approvalTimestamps[txId][msg.sender] = block.timestamp;
+
         emit TransactionApproved(txId, msg.sender);
     }
 
@@ -165,6 +180,13 @@ contract MultiSignPaymentWallet {
 
     function getTransactions() external view returns (Transaction[] memory) {
         return transactions;
+    }
+
+    function getTransactionApprovers(
+        uint txId
+    ) external view returns (Approval[] memory) {
+        require(txId < transactions.length, "Invalid transaction ID");
+        return transactionApprovals[txId];
     }
 
     function getBalance() external view returns (uint) {

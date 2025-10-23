@@ -160,4 +160,37 @@ router.get("/balance", async (req: Request, res: Response) => {
 	}
 });
 
+router.get(
+	"/transactions/:txId/approvers",
+	async (req: Request, res: Response) => {
+		try {
+			const { txId } = req.params;
+			const transactionId = Number.parseInt(txId, 10);
+
+			if (Number.isNaN(transactionId)) {
+				res.status(400).json({
+					success: false,
+					message: "Invalid transaction ID",
+				});
+				return;
+			}
+
+			const approvers =
+				await walletContract.getTransactionApprovers(transactionId);
+			res.json({
+				txId: txId,
+				totalApprovals: approvers.length,
+				approvals: approvers,
+			});
+		} catch (error) {
+			console.error("Get approvers error:", error);
+			res.status(500).json({
+				success: false,
+				message:
+					error instanceof Error ? error.message : "Failed to get approvers",
+			});
+		}
+	},
+);
+
 export default router;

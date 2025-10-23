@@ -19,11 +19,13 @@ const config = loadConfig();
 
 const walletContractAddress = config.WALLET_CONTRACT_ADDRESS as `0x${string}`;
 
-interface Transaction {
+interface FormattedTransaction {
+	id: number;
 	to: string;
-	amount: bigint;
-	approvalCount: bigint;
+	amount: string;
+	approvalCount: string;
 	executed: boolean;
+	amountEth: number;
 }
 
 export class WalletContract {
@@ -135,7 +137,7 @@ export class WalletContract {
 		return hash;
 	}
 
-	async getTransactions(): Promise<Transaction[]> {
+	async getTransactions(): Promise<FormattedTransaction[]> {
 		const transactions = await this.publicClient.readContract({
 			address: walletContractAddress,
 			abi: this.abi,
@@ -144,17 +146,42 @@ export class WalletContract {
 
 		console.log("Retrieved transactions:", transactions);
 
-		// Convert BigInt values to strings for JSON serialization
-		const formattedTransactions = (transactions as any[]).map((tx, index) => ({
-			id: index,
-			to: tx.to,
-			amount: tx.amount.toString(),
-			approvalCount: tx.approvalCount.toString(),
-			executed: tx.executed,
-			amountEth: Number(tx.amount) / 1e18, // Add human-readable amount
-		}));
+		const formattedTransactions = (transactions as unknown[]).map(
+			(tx: any, index) => ({
+				id: index,
+				to: tx.to,
+				amount: tx.amount.toString(),
+				approvalCount: tx.approvalCount.toString(),
+				executed: tx.executed,
+				amountEth: Number(tx.amount) / 1e18,
+			}),
+		);
 
 		return formattedTransactions;
+	}
+
+	async getTransactionApprovers(transactionId: number): Promise<any[]> {
+		const approvers = await this.publicClient.readContract({
+			address: walletContractAddress,
+			abi: this.abi,
+			functionName: "getTransactionApprovers",
+			args: [BigInt(transactionId)],
+		});
+
+		console.log(
+			`Retrieved approvers for transaction ${transactionId}:`,
+			approvers,
+		);
+
+		const formattedApprovers = (approvers as unknown[]).map(
+			(approval: any) => ({
+				approver: approval.approver,
+				timestamp: approval.timestamp.toString(),
+				date: new Date(Number(approval.timestamp) * 1000).toISOString(),
+			}),
+		);
+
+		return formattedApprovers;
 	}
 
 	async getBalance(): Promise<bigint> {
