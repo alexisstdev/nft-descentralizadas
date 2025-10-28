@@ -9,4 +9,5 @@ export interface EnvConfig {
 	PRIVATE_KEYS: string;
 	PAYMENT_CONTRACT_ADDRESS: string;
 	WALLET_CONTRACT_ADDRESS: string;
+	PRODUCT_CONTRACT_ADDRESS: string;
 }

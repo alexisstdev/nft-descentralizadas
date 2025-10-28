@@ -1,3 +1,4 @@
 {
-  "WalletModule#MultiSignPaymentWallet": "0x60F3e43959082aDc91e45bDBEa81315436332a1E"
+  "WalletModule#MultiSignPaymentWallet": "0x60F3e43959082aDc91e45bDBEa81315436332a1E",
+  "ProductModule#ProductContract": "0x2D7e6067bb0010d6FB896d53f8FAd7570b0180d0"
 }

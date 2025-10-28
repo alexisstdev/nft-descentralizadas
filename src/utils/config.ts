@@ -16,9 +16,9 @@ export function loadConfig(): EnvConfig {
 		PAYMENT_CONTRACT_ADDRESS: process.env.PAYMENT_CONTRACT_ADDRESS,
 
 		WALLET_CONTRACT_ADDRESS: process.env.WALLET_CONTRACT_ADDRESS,
+		PRODUCT_CONTRACT_ADDRESS: process.env.PRODUCT_CONTRACT_ADDRESS,
 	};
 
-	// Validate required environment variables
 	for (const [key, value] of Object.entries(config)) {
 		if (!value) {
 			throw new Error(`Variable de entorno requerida: ${key}`);

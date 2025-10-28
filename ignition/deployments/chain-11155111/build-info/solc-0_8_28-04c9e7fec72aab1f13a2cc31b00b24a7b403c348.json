@@ -1,0 +1,39 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_28-04c9e7fec72aab1f13a2cc31b00b24a7b403c348",
+  "solcVersion": "0.8.28",
+  "solcLongVersion": "0.8.28+commit.7893614a",
+  "userSourceNameMap": {
+    "contracts/Product.sol": "project/contracts/Product.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "cancun",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode",
+            "evm.deployedBytecode",
+            "evm.methodIdentifiers",
+            "metadata"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/Product.sol": {
+        "content": "pragma solidity ^0.8.0;\n\ncontract ProductContract {\n    address[] public owners;\n    mapping(address => bool) public isOwner;\n\n    struct Product {\n        uint id;\n        string name;\n        uint price;\n        address seller;\n        bool active;\n    }\n\n    uint public nextProductId;\n    mapping(uint => Product) public products;\n    mapping(address => uint[]) public purchases;\n\n    address[] public payees;\n    mapping(address => uint) public shares;\n    uint256 public totalShares;\n\n    uint256 private _status;\n\n    modifier nonReentrant() {\n        require(_status != 2, \"Reentrancy Guard:Reentrant call\");\n        _status = 2;\n        _;\n        _status = 1;\n    }\n\n    event Deposit(address indexed sender, uint amount);\n    event PaymentReleased(address indexed payee, uint amount);\n    event ProductAdded(uint id, string name, uint price, address seller);\n    event ProductPurchased(uint id, address buyer, uint price);\n\n    modifier onlyOwner() {\n        require(isOwner[msg.sender], \"Not an owner\");\n        _;\n    }\n\n    constructor(\n        address[] memory _owners,\n        address[] memory _payees,\n        uint256[] memory _shares\n    ) {\n        _status = 1;\n        require(_owners.length > 0, \"Must have owners\");\n\n        for (uint i = 0; i < _owners.length; i++) {\n            address owner = _owners[i];\n            require(owner != address(0), \"Invalid Address\");\n            require(!isOwner[owner], \"Owner not unique\");\n            isOwner[owner] = true;\n            owners.push(owner);\n        }\n\n        require(_payees.length == _shares.length, \"Length mismatch\");\n        require(_payees.length > 0, \"No payees\");\n        for (uint i = 0; i < _payees.length; i++) {\n            require(_payees[i] != address(0), \"invalid address\");\n            require(_shares[i] > 0, \"shares must be>0\");\n            payees.push(_payees[i]);\n            shares[_payees[i]] = _shares[i];\n            totalShares += _shares[i];\n        }\n    }\n\n    // Product functions\n    function addProduct(string memory _name, uint _price) external onlyOwner {\n        require(_price > 0, \"El precio debe ser mayor a 0\");\n        uint productId = nextProductId++;\n        products[productId] = Product({\n            id: productId,\n            name: _name,\n            price: _price,\n            seller: msg.sender,\n            active: true\n        });\n        emit ProductAdded(productId, _name, _price, msg.sender);\n    }\n\n    function buyProduct(uint _productId) external payable nonReentrant {\n        Product storage product = products[_productId];\n        require(product.active, \"Producto no disponible\");\n        require(msg.value == product.price, \"Monto incorrecto\");\n\n        emit Deposit(msg.sender, msg.value);\n\n        purchases[msg.sender].push(_productId);\n        emit ProductPurchased(_productId, msg.sender, product.price);\n    }\n\n    function disableProduct(uint _productId) external onlyOwner {\n        products[_productId].active = false;\n    }\n\n    function releasePayments() external nonReentrant {\n        uint256 contractBalance = address(this).balance;\n        require(contractBalance > 0, \"No funds to release\");\n        for (uint256 i = 0; i < payees.length; i++) {\n            address payee = payees[i];\n            uint256 payment = (contractBalance * shares[payee]) / totalShares;\n\n            if (payment > 0) {\n                (bool success, ) = payee.call{value: payment}(\"\");\n                require(success, \"Payment failed\");\n                emit PaymentReleased(payee, payment);\n            }\n        }\n    }\n\n    function getAllProducts() external view returns (Product[] memory) {\n        Product[] memory all = new Product[](nextProductId);\n        for (uint i = 0; i < nextProductId; i++) {\n            all[i] = products[i];\n        }\n        return all;\n    }\n\n    function getUserPurchases(\n        address _user\n    ) external view returns (uint[] memory) {\n        return purchases[_user];\n    }\n\n    function getBalance() external view returns (uint) {\n        return address(this).balance;\n    }\n}\n"
+      }
+    }
+  }
+}
