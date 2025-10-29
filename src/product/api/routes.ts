@@ -70,37 +70,48 @@ router.post("/products/:productId/buy", async (req: Request, res: Response) => {
 	}
 });
 
-router.patch(
-	"/products/:productId/disable",
-	async (req: Request, res: Response) => {
-		try {
-			const { productId } = req.params;
-			const id = Number.parseInt(productId, 10);
+router.patch("/products/:productId", async (req: Request, res: Response) => {
+	try {
+		const { productId } = req.params;
+		const { name, price, active } = req.body;
+		const id = Number.parseInt(productId, 10);
 
-			if (Number.isNaN(id)) {
-				res.status(400).json({
-					success: false,
-					message: "Invalid product ID",
-				});
-				return;
-			}
-
-			const hash = await productContract.disableProduct({ productId: id });
-			res.json({
-				success: true,
-				message: "Product disabled successfully",
-				hash,
-			});
-		} catch (error) {
-			console.error("Disable product error:", error);
-			res.status(500).json({
+		if (Number.isNaN(id)) {
+			res.status(400).json({
 				success: false,
-				message:
-					error instanceof Error ? error.message : "Failed to disable product",
+				message: "Invalid product ID",
 			});
+			return;
 		}
-	},
-);
+
+		if (!name || !price || active === undefined) {
+			res.status(400).json({
+				success: false,
+				message: "name, price, and active are required",
+			});
+			return;
+		}
+
+		const hash = await productContract.editProduct({
+			productId: id,
+			name,
+			price,
+			active,
+		});
+		res.json({
+			success: true,
+			message: "Product updated successfully",
+			hash,
+		});
+	} catch (error) {
+		console.error("Edit product error:", error);
+		res.status(500).json({
+			success: false,
+			message:
+				error instanceof Error ? error.message : "Failed to edit product",
+		});
+	}
+});
 
 router.get("/products", async (req: Request, res: Response) => {
 	try {
@@ -161,11 +172,30 @@ router.get("/balance", async (req: Request, res: Response) => {
 
 router.post("/release", async (req: Request, res: Response) => {
 	try {
-		const hash = await productContract.releasePayments();
+		const { percentages } = req.body;
+
+		if (!percentages || !Array.isArray(percentages)) {
+			res.status(400).json({
+				success: false,
+				message: "percentages array is required",
+			});
+			return;
+		}
+
+		const total = percentages.reduce((sum, p) => sum + p, 0);
+		if (total !== 100) {
+			res.status(400).json({
+				success: false,
+				message: "Percentages must sum to 100",
+			});
+			return;
+		}
+
+		const hash = await productContract.releasePayments({ percentages });
 
 		res.json({
 			success: true,
-			message: "Payments released to all payees (80/20 split)",
+			message: `Payments released with custom split: ${percentages.join("%, ")}%`,
 			hash,
 		});
 	} catch (error) {

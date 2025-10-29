@@ -8,8 +8,6 @@ export default buildModule("ProductModule", (m) => {
 
 	const shares = [80, 20];
 
-	const requiredApprovals = 2;
-
 	const product = m.contract("ProductContract", [owners, owners, shares]);
 
 	return { product };

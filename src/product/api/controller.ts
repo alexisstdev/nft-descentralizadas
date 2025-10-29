@@ -101,17 +101,31 @@ export class ProductContract {
 		return hash;
 	}
 
-	async disableProduct({ productId }: { productId: number }): Promise<string> {
+	async editProduct({
+		productId,
+		name,
+		price,
+		active,
+	}: {
+		productId: number;
+		name: string;
+		price: string;
+		active: boolean;
+	}): Promise<string> {
+		const parsedPrice = parseEther(price);
+
 		const hash = await this.walletClient.writeContract({
 			address: productContractAddress,
 			abi: this.abi,
-			functionName: "disableProduct",
-			args: [BigInt(productId)],
+			functionName: "editProduct",
+			args: [BigInt(productId), name, parsedPrice, active],
 			chain: sepolia,
 		});
 
 		await this.publicClient.waitForTransactionReceipt({ hash });
-		console.log(`Product ${productId} disabled`);
+		console.log(
+			`Product ${productId} updated: name="${name}", price=${price} ETH, active=${active}`,
+		);
 		return hash;
 	}
 
@@ -125,6 +139,7 @@ export class ProductContract {
 		console.log("Retrieved products:", products);
 
 		const formattedProducts = (products as unknown[]).map(
+			// @ts-ignore
 			(product: {
 				id: bigint;
 				name: string;
@@ -170,16 +185,21 @@ export class ProductContract {
 		return balance as bigint;
 	}
 
-	async releasePayments(): Promise<string> {
+	async releasePayments({
+		percentages,
+	}: { percentages: number[] }): Promise<string> {
 		const hash = await this.walletClient.writeContract({
 			address: productContractAddress,
 			abi: this.abi,
 			functionName: "releasePayments",
+			args: [percentages.map((p) => BigInt(p))],
 			chain: sepolia,
 		});
 
 		await this.publicClient.waitForTransactionReceipt({ hash });
-		console.log("Payments released to all payees");
+		console.log(
+			`Payments released with percentages: ${percentages.join("%, ")}%`,
+		);
 		return hash;
 	}
 }

@@ -66,7 +66,6 @@ contract ProductContract {
         }
     }
 
-    // Product functions
     function addProduct(string memory _name, uint _price) external onlyOwner {
         require(_price > 0, "El precio debe ser mayor a 0");
         uint productId = nextProductId++;
@@ -91,16 +90,43 @@ contract ProductContract {
         emit ProductPurchased(_productId, msg.sender, product.price);
     }
 
-    function disableProduct(uint _productId) external onlyOwner {
-        products[_productId].active = false;
+    function editProduct(
+        uint _productId,
+        string memory _name,
+        uint _price,
+        bool _active
+    ) external onlyOwner {
+        require(_productId < nextProductId, "Producto no existe");
+        require(_price > 0, "El precio debe ser mayor a 0");
+
+        Product storage product = products[_productId];
+        product.name = _name;
+        product.price = _price;
+        product.active = _active;
+
+        emit ProductAdded(_productId, _name, _price, msg.sender);
     }
 
-    function releasePayments() external nonReentrant {
+    function releasePayments(
+        uint256[] memory _percentages
+    ) external nonReentrant {
+        require(
+            _percentages.length == payees.length,
+            "Percentages length mismatch"
+        );
+
+        uint256 totalPercentage = 0;
+        for (uint256 i = 0; i < _percentages.length; i++) {
+            totalPercentage += _percentages[i];
+        }
+        require(totalPercentage == 100, "Percentages must sum to 100");
+
         uint256 contractBalance = address(this).balance;
         require(contractBalance > 0, "No funds to release");
+
         for (uint256 i = 0; i < payees.length; i++) {
             address payee = payees[i];
-            uint256 payment = (contractBalance * shares[payee]) / totalShares;
+            uint256 payment = (contractBalance * _percentages[i]) / 100;
 
             if (payment > 0) {
                 (bool success, ) = payee.call{value: payment}("");
